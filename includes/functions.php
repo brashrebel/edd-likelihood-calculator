@@ -63,7 +63,7 @@ function edd_likelihood_calculator_page() {
 						if ( $sales == 0 ) {
 							continue;
 						}
-						$customers = eddlc_get_customers( 1050 );
+						$customers = eddlc_get_customers( $post->ID );
 						$downloads = eddlc_get_all_downloads_for_customers( $customers );
 						// Most common
 						$most_common = eddlc_get_most_common_value( $downloads, array( $post->ID ) );
@@ -80,7 +80,7 @@ function edd_likelihood_calculator_page() {
 						?>
 						<tr>
 							<td class='label column-label has-row-actions column-primary' data-colname="Download">
-								<?php echo $post->post_title; ?>
+								<a href="<?php echo get_edit_post_link( $post->ID ); ?>"><?php echo $post->post_title; ?></a>
 								<button type="button" class="toggle-row"><span class="screen-reader-text">Show more details</span>
 								</button>
 							</td>
@@ -88,14 +88,26 @@ function edd_likelihood_calculator_page() {
 								<?php echo $sales; ?>
 							</td>
 							<td class='most_related column-most_related' data-colname="Most Related Download">
-								<?php echo get_the_title( $most_common ); ?> <br/>
+								<?php if ( $most_common_sales > 0 ) { ?>
+								<a href="<?php echo get_edit_post_link( $most_common ); ?>">
+									<?php echo get_the_title( $most_common ); ?>
+								</a><br/>
 								Sales: <?php echo $most_common_sales; ?><br/>
 								Likelihood: <?php echo $most_common_percent; ?>
+								<?php } else { ?>
+									No related downloads
+								<?php } ?>
 							</td>
 							<td class='second_most column-second_most' data-colname="2nd Most Related Download">
-								<?php echo get_the_title( $second_most_common ); ?> <br/>
+								<?php if ( $second_most_common_sales > 0 ) { ?>
+								<a href="<?php echo get_edit_post_link( $second_most_common ); ?>">
+									<?php echo get_the_title( $second_most_common ); ?>
+								</a><br/>
 								Sales: <?php echo $second_most_common_sales; ?><br/>
 								Likelihood: <?php echo $second_most_common_percent; ?>
+								<?php } else { ?>
+									No related downloads
+								<?php } ?>
 							</td>
 						</tr>
 						<?php
