@@ -83,6 +83,8 @@ if ( ! class_exists( 'EDD_Likelihood_Calculator' ) ) {
 		 * @return      void
 		 */
 		private function hooks() {
+			add_action('edd_reports_tabs', 'edd_likelihood_calculator_tab');
+			add_action('edd_reports_tab_likelihood_calculator', 'edd_likelihood_calculator_page');
 			// Handle licensing
 //			if ( class_exists( 'EDD_License' ) ) {
 //				$license = new EDD_License( __FILE__, 'Likelihood Calculator', EDD_LIKELIHOOD_CALCULATOR_VER, 'Kyle Maurer' );
