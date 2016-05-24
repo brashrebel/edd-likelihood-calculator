@@ -49,6 +49,7 @@ function edd_likelihood_calculator_page() {
 					<th scope="col" id='second_most' class='manage-column column-second_most'>2nd Most Related
 						Download
 					</th>
+					<th scope="col" id='tickets' class='manage-column column-tickets'>Tickets</th>
 				</tr>
 				</thead>
 
@@ -66,17 +67,23 @@ function edd_likelihood_calculator_page() {
 						$customers = eddlc_get_customers( $post->ID );
 						$downloads = eddlc_get_all_downloads_for_customers( $customers );
 						// Most common
-						$most_common = eddlc_get_most_common_value( $downloads, array( $post->ID ) );
-						$count_most_common = array_count_values( $downloads );
-						$most_common_sales = $count_most_common[$most_common];
-						$most_common_rate = $most_common_sales / $sales;
+						$most_common         = eddlc_get_most_common_value( $downloads, array( $post->ID ) );
+						$count_most_common   = array_count_values( $downloads );
+						$most_common_sales   = $count_most_common[ $most_common ];
+						$most_common_rate    = $most_common_sales / $sales;
 						$most_common_percent = number_format( $most_common_rate * 100, 2 ) . '%';
 						// Second most common
-						$second_most_common = eddlc_get_most_common_value( $downloads, array( $post->ID, $most_common ) );
-						$second_count_most_common = array_count_values( $downloads );
-						$second_most_common_sales = $count_most_common[$second_most_common];
-						$second_most_common_rate = $second_most_common_sales / $sales;
+						$second_most_common         = eddlc_get_most_common_value( $downloads, array(
+							$post->ID,
+							$most_common
+						) );
+						$second_count_most_common   = array_count_values( $downloads );
+						$second_most_common_sales   = $count_most_common[ $second_most_common ];
+						$second_most_common_rate    = $second_most_common_sales / $sales;
 						$second_most_common_percent = number_format( $second_most_common_rate * 100, 2 ) . '%';
+						// Tickets
+						$ticket_count = eddlc_get_conversation_count( $post->post_name );
+						$ticket_rate = number_format( eddlc_get_conversation_rate( $sales, $ticket_count ), 2 ) . '%';
 						?>
 						<tr>
 							<td class='label column-label has-row-actions column-primary' data-colname="Download">
@@ -89,25 +96,29 @@ function edd_likelihood_calculator_page() {
 							</td>
 							<td class='most_related column-most_related' data-colname="Most Related Download">
 								<?php if ( $most_common_sales > 0 ) { ?>
-								<a href="<?php echo get_edit_post_link( $most_common ); ?>">
-									<?php echo get_the_title( $most_common ); ?>
-								</a><br/>
-								Sales: <?php echo $most_common_sales; ?><br/>
-								Likelihood: <?php echo $most_common_percent; ?>
+									<a href="<?php echo get_edit_post_link( $most_common ); ?>">
+										<?php echo get_the_title( $most_common ); ?>
+									</a><br/>
+									Sales: <?php echo $most_common_sales; ?><br/>
+									Likelihood: <?php echo $most_common_percent; ?>
 								<?php } else { ?>
 									No related downloads
 								<?php } ?>
 							</td>
 							<td class='second_most column-second_most' data-colname="2nd Most Related Download">
 								<?php if ( $second_most_common_sales > 0 ) { ?>
-								<a href="<?php echo get_edit_post_link( $second_most_common ); ?>">
-									<?php echo get_the_title( $second_most_common ); ?>
-								</a><br/>
-								Sales: <?php echo $second_most_common_sales; ?><br/>
-								Likelihood: <?php echo $second_most_common_percent; ?>
+									<a href="<?php echo get_edit_post_link( $second_most_common ); ?>">
+										<?php echo get_the_title( $second_most_common ); ?>
+									</a><br/>
+									Sales: <?php echo $second_most_common_sales; ?><br/>
+									Likelihood: <?php echo $second_most_common_percent; ?>
 								<?php } else { ?>
 									No related downloads
 								<?php } ?>
+							</td>
+							<td class='tickets column-tickets' data-colname="Tickets">
+								Tickets: <?php echo $ticket_count; ?><br/>
+								Ticket rate: <?php echo $ticket_rate; ?>
 							</td>
 						</tr>
 						<?php
@@ -121,6 +132,7 @@ function edd_likelihood_calculator_page() {
 					<th scope="col" class='manage-column column-total_sales'>Total Sales</th>
 					<th scope="col" class='manage-column column-most_related'>Most Related Download</th>
 					<th scope="col" class='manage-column column-second_most'>2nd Most Related Download</th>
+					<th scope="col" class='manage-column column-tickets'>Tickets</th>
 				</tr>
 				</tfoot>
 
@@ -164,8 +176,10 @@ function eddlc_get_all_downloads_for_customers( $customers ) {
 
 	foreach ( $customers as $customer ) {
 		$purchased = edd_get_users_purchased_products( $customer );
-		foreach ( $purchased as $purchase ) {
-			$downloads[] = $purchase->ID;
+		if ( $purchased ) {
+			foreach ( $purchased as $purchase ) {
+				$downloads[] = $purchase->ID;
+			}
 		}
 	}
 
@@ -175,10 +189,32 @@ function eddlc_get_all_downloads_for_customers( $customers ) {
 function eddlc_get_most_common_value( $ids, $unset ) {
 	foreach ( $ids as $key => $val ) {
 		if ( in_array( $val, $unset ) ) {
-			unset( $ids[$key] );
+			unset( $ids[ $key ] );
 		}
 	}
-	$results = array_count_values($ids);
-	$results = array_search(max($results), $results);
+	$results = array_count_values( $ids );
+	$results = array_search( max( $results ), $results );
+
 	return $results;
+}
+
+function eddlc_get_conversation_count( $tag ) {
+	$api = '2f6de042a3efb509593e72f0fe2743d900d7f407';
+	$mailbox = '18425';
+	$url     = 'https://api.helpscout.net/v1/mailboxes/' . $mailbox . '/conversations.json?tag=' . $tag;
+	$args = array(
+		'headers' => array(
+			'Authorization' => 'Basic ' . base64_encode( $api . ':X' ),
+			'Content-Type' => 'application/x-www-form-urlencoded'
+		)
+	);
+	$request = wp_remote_request( $url, $args );
+	$request = json_decode( wp_remote_retrieve_body( $request ) );
+	return $request->count;
+}
+
+function eddlc_get_conversation_rate( $sales, $conversations ) {
+
+	$rate = ( $conversations !== 0 ) ? $sales / $conversations : 0;
+	return $rate;
 }
