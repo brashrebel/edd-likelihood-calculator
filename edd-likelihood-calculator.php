@@ -73,6 +73,7 @@ if ( ! class_exists( 'EDD_Likelihood_Calculator' ) ) {
 		private function includes() {
 			// Include scripts
 			require_once EDD_LIKELIHOOD_CALCULATOR_DIR . 'includes/functions.php';
+			require_once EDD_LIKELIHOOD_CALCULATOR_DIR . 'includes/help-scout.php';
 		}
 
 		/**

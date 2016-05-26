@@ -197,24 +197,3 @@ function eddlc_get_most_common_value( $ids, $unset ) {
 
 	return $results;
 }
-
-function eddlc_get_conversation_count( $tag ) {
-	$api = '2f6de042a3efb509593e72f0fe2743d900d7f407';
-	$mailbox = '18425';
-	$url     = 'https://api.helpscout.net/v1/mailboxes/' . $mailbox . '/conversations.json?tag=' . $tag;
-	$args = array(
-		'headers' => array(
-			'Authorization' => 'Basic ' . base64_encode( $api . ':X' ),
-			'Content-Type' => 'application/x-www-form-urlencoded'
-		)
-	);
-	$request = wp_remote_request( $url, $args );
-	$request = json_decode( wp_remote_retrieve_body( $request ) );
-	return $request->count;
-}
-
-function eddlc_get_conversation_rate( $sales, $conversations ) {
-
-	$rate = ( $conversations !== 0 ) ? $sales / $conversations : 0;
-	return $rate;
-}
