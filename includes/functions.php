@@ -43,8 +43,19 @@ function edd_likelihood_calculator_page() {
 	?>
 	<div class="wrap">
 			<?php
+			echo eddlc_display_filtered_download( $table->get_filtered_download() );
 			$table->display();
 			?>
 	</div>
 	<?php
+}
+function eddlc_display_filtered_download( $id ) {
+	if ( $id ) {
+		$sales = edd_get_download_sales_stats( $id );
+		$title = get_the_title( $id );
+		$output = '<div class="postbox"><div class="inside"><strong>Selected download: </strong>' . $title . '<br/><strong>Sales: </strong>' . $sales . '</div></div>';
+	} else {
+		$output = '<div class="postbox"><div class="inside">No download selected.</div></div>';
+	}
+	return $output;
 }

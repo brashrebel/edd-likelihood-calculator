@@ -218,14 +218,24 @@ class EDD_LC_Table extends WP_List_Table {
 			$purchased = edd_get_users_purchased_products( $customer );
 			if ( $purchased ) {
 				foreach ( $purchased as $purchase ) {
-//					if ( ! in_array( $purchase->ID, $downloads ) ) {
 						$downloads[] = $purchase->ID;
-//					}
 				}
 			}
 		}
 
 		return $downloads;
+	}
+
+	/**
+	 * Used for sorting the results of the downloads query by # of related sales
+	 * 
+	 * @param $a
+	 * @param $b
+	 *
+	 * @return int
+	 */
+	function sort_downloads( $a, $b ) {
+		return strcmp( $b["sales"], $a["sales"] );
 	}
 
 	/**
@@ -246,13 +256,13 @@ class EDD_LC_Table extends WP_List_Table {
 			if ( $download_ids ) {
 
 				$count = array_count_values( $download_ids );
-				$downloads = new WP_Query(
-					array(
-						'post_type'      => 'download',
-						'posts_per_page' => $this->per_page,
-						'post__in'       => $download_ids,
-					)
+
+				$args = array(
+					'post_type'      => 'download',
+					'posts_per_page' => $this->per_page,
+					'post__in'       => $download_ids,
 				);
+				$downloads = new WP_Query( $args );
 				if ( $downloads->have_posts() ) {
 					while ( $downloads->have_posts() ) {
 						$downloads->the_post();
@@ -268,6 +278,7 @@ class EDD_LC_Table extends WP_List_Table {
 				}
 			}
 		}
+		usort( $data, array( $this, 'sort_downloads' ) );
 		return $data;
 	}
 
