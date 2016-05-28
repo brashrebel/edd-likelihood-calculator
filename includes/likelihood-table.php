@@ -218,7 +218,9 @@ class EDD_LC_Table extends WP_List_Table {
 			$purchased = edd_get_users_purchased_products( $customer );
 			if ( $purchased ) {
 				foreach ( $purchased as $purchase ) {
+					if ( $purchase->ID !== $this->get_filtered_download() ) {
 						$downloads[] = $purchase->ID;
+					}
 				}
 			}
 		}
@@ -228,7 +230,7 @@ class EDD_LC_Table extends WP_List_Table {
 
 	/**
 	 * Used for sorting the results of the downloads query by # of related sales
-	 * 
+	 *
 	 * @param $a
 	 * @param $b
 	 *
@@ -259,7 +261,6 @@ class EDD_LC_Table extends WP_List_Table {
 
 				$args = array(
 					'post_type'      => 'download',
-					'posts_per_page' => $this->per_page,
 					'post__in'       => $download_ids,
 				);
 				$downloads = new WP_Query( $args );
