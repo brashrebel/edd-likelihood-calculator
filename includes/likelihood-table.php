@@ -224,7 +224,6 @@ class EDD_LC_Table extends WP_List_Table {
 				}
 			}
 		}
-
 		return $downloads;
 	}
 
@@ -240,6 +239,11 @@ class EDD_LC_Table extends WP_List_Table {
 		return strcmp( $b["sales"], $a["sales"] );
 	}
 
+	function total_items() {
+		$items = $this->get_all_downloads_for_customers( $this->get_customers( $this->get_filtered_download() ) );
+		$total = count( array_unique( $items ) );
+		return $total;
+	}
 	/**
 	 * Gets the log entries for the current view
 	 *
@@ -262,6 +266,8 @@ class EDD_LC_Table extends WP_List_Table {
 				$args = array(
 					'post_type'      => 'download',
 					'post__in'       => $download_ids,
+					'posts_per_page'   => $this->per_page,
+					'paged'            => $this->get_paged(),
 				);
 				$downloads = new WP_Query( $args );
 				if ( $downloads->have_posts() ) {
@@ -303,7 +309,7 @@ class EDD_LC_Table extends WP_List_Table {
 		$sortable              = $this->get_sortable_columns();
 		$this->_column_headers = array( $columns, $hidden, $sortable );
 		$this->items           = $this->get_downloads();
-		$total_items           = count( $this->items );
+		$total_items           = $this->total_items();
 
 		$this->set_pagination_args( array(
 				'total_items' => $total_items,
