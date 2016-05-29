@@ -49,13 +49,24 @@ function edd_likelihood_calculator_page() {
 	</div>
 	<?php
 }
+
+/**
+ * Displays selected download above table and message if no download is selected
+ * 
+ * @param $id
+ *
+ * @return string
+ */
 function eddlc_display_filtered_download( $id ) {
-	if ( $id ) {
+	if ( edd_get_download_sales_stats( $id ) ) {
 		$sales = edd_get_download_sales_stats( $id );
 		$title = get_the_title( $id );
-		$output = '<div class="postbox"><div class="inside"><strong>Selected download: </strong>' . $title . '<br/><strong>Sales: </strong>' . $sales . '</div></div>';
+		$message = '<strong>Selected download: </strong>' . $title . '<br/><strong>Sales: </strong>' . $sales;
+	} elseif ( $id ) {
+		$message = 'No valid download selected.';
 	} else {
-		$output = '<div class="postbox"><div class="inside">No download selected.</div></div>';
+		$message = 'No download selected.';
 	}
+	$output = '<div class="postbox"><div class="inside">' . $message . '</div></div>';
 	return $output;
 }

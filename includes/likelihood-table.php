@@ -21,7 +21,7 @@ class EDD_LC_Table extends WP_List_Table {
 	 * @var int
 	 * @since 0.1
 	 */
-	public $per_page = 15;
+	public $per_page = 20;
 
 	/**
 	 * Are we searching for files?
@@ -108,7 +108,7 @@ class EDD_LC_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Retrieves the ID of the download we're filtering logs by
+	 * Retrieves the ID of the download we're filtering downloads by
 	 *
 	 * @access public
 	 * @since 0.1
@@ -194,9 +194,9 @@ class EDD_LC_Table extends WP_List_Table {
 		$customers = array();
 
 		foreach ( $payments as $payment ) {
-			$customer_id = $payment->post_author;
-			if ( ! in_array( $customer_id, $customers ) ) {
-				$customers[] = $customer_id;
+			$customer_email = edd_get_payment_user_email( $payment->ID );
+			if ( ! in_array( $customer_email, $customers ) ) {
+				$customers[] = $customer_email;
 			}
 		}
 
@@ -245,7 +245,7 @@ class EDD_LC_Table extends WP_List_Table {
 		return $total;
 	}
 	/**
-	 * Gets the log entries for the current view
+	 * Gets the downloads for the current view
 	 *
 	 * @access public
 	 * @since 0.1
@@ -296,9 +296,8 @@ class EDD_LC_Table extends WP_List_Table {
 	 * @since 0.1
 	 * @uses EDD_LC_Table::get_columns()
 	 * @uses WP_List_Table::get_sortable_columns()
-	 * @uses EDD_LC_Table::get_pagenum()
 	 * @uses EDD_LC_Table::get_downloads()
-	 * @uses EDD_LC_Table::get_log_count()
+	 * @uses EDD_LC_Table::total_items()
 	 * @uses WP_List_Table::set_pagination_args()
 	 * @return void
 	 */
